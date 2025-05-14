@@ -2,7 +2,7 @@
 
 ## Securing Network-on-Chips Against Trojan-Induced Packet Duplication Attacks
 
-![Overview](hulk.pdf)
+![Overview](hulk.png)
 
 ## Setup
 Clone repository
