@@ -36,4 +36,16 @@ In the [scripts](scripts) folder you can find useful shell scripts to gather res
 
 ## Citation
 
-To be updated.
+If you find this repository useful please cite:
+
+> M. Rajan, A. Das, and J. Jose, "**[Securing Network-on-Chips Against Trojan-Induced Packet Duplication Attacks](#)**," in *ACM Transactions on Design Automation of Electronic Systems*, vol. xx, no. xx, pp. xx, 2025, doi: xxxx.
+
+```BibTeX
+@article{rajan2025hulk,
+  title={Securing Network-on-Chips Against Trojan-Induced Packet Duplication Attacks},
+  author={Rajan, Manju and Das, Abhijit and Jose, John},
+  journal={ACM Transactions on Design Automation of Electronic Systems},
+  year={2025},
+  publisher={ACM}
+}
+```
