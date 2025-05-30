@@ -56,6 +56,11 @@ using namespace std;
 using m5::stl_helpers::deletePointers;
 const uint32_t MOD_ADLER = 65521;
 RouteInfo route;
+unsigned long KEY;
+unsigned long MsgID;
+// Static state: PRNG seed and sequence counter
+static unsigned long Seed = 123456789;
+static unsigned long Seq_ID = 0;
 
 
 NetworkInterface::NetworkInterface(const Params *p)
@@ -457,9 +462,7 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
             // that a message with this particular destination has been
             // flitisized and an output vc is acquired
             net_msg_ptr->getDestination().removeNetDest(personal_dest);
-        }
-
-	
+        }	
         // Embed Route into the flits
         // NetDest format is used by the routing table
         // Custom routing algorithms just need destID
@@ -509,27 +512,23 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
 	{		
               	HT_active=true;
                 dest_temp =  route.dest_router;
-                //HT_buffer.push_back({c_id_temp, k_temp, dest_temp});               
+                //HT_buffer.push_back({c_id_temp, k_temp, dest_temp});           
           
 	}
-
 	
       
 	if((HT_active) && (num_flits==1) && ((curCycle()%10==0)))
-       	{
-	 
+       	{	 
 	 std::stringstream buffer;
    	 buffer<<*msg_ptr<<endl;
-          //counter++;
-   	 string test = buffer.str();
+         string test = buffer.str();
    	 size_t founds = test.find("GETS"); 
         size_t foundi = test.find("GET_INSTR");
         
      //size_t foundx = test.find("GETX");     
 
      if (founds != string::npos || foundi != string::npos)
-        {
-             
+        {             
           //send duplicate messages      
         for(int i=0; i<20;i++)
 		 {	
@@ -539,15 +538,12 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
                 flit *fl = new flit(i, vc, vnet, route, num_flits, new_msg_ptr,
                 curCycle(), m_net_ptr->get_pid(), true);
                  fl->set_src_delay(curCycle() - ticksToCycles(msg_ptr->getTime()));
-                 //cout<<"Entered SIM checking"<<endl;
-                // cout<< "Processor Key "<<k<<endl;
-                 bool check;
-                 check = check_CMHR(MsgID, route.src_ni);  
+                bool check;
+                 check = check_PSHR(MsgID, route.src_ni);  
                 if (check)
                 {
-                 cout<<"Trojan Detected"<<endl;
-                continue;
-                 //return true;            
+                 cout<<"LOKI Detected"<<endl;
+                continue;                            
                  }
                      
                  m_ni_out_vcs[vc]->insert(fl);                 
@@ -706,7 +702,7 @@ NetworkInterface::functionalWrite(Packet *pkt)
 }
 
 void 
-NetworkInterface::allocateCMHRentry(unsigned long MsgID, int src_router, int dest_router, uint32_t checksum,
+NetworkInterface::allocatePSHRentry(unsigned long MsgID, int src_router, int dest_router, uint32_t checksum,
     Cycles c, int vnet, int src_ni)          
 {
     CMHR proto_tab = {MsgID, src_router, dest_router, checksum, c, vnet, src_ni, true};
@@ -714,7 +710,7 @@ NetworkInterface::allocateCMHRentry(unsigned long MsgID, int src_router, int des
 }
 
 bool
-NetworkInterface::check_CMHR(unsigned long MsgID, int src_ni)
+NetworkInterface::check_PSHR(unsigned long MsgID, int src_ni)
 {
     uint32_t test_checksum;
     test_checksum = compute_checksum(MsgID);
@@ -746,7 +742,7 @@ NetworkInterface::check_CMHR(unsigned long MsgID, int src_ni)
 }
 
 void
-NetworkInterface::deallocate_CMHR(uint64_t MsgID, int src_ni)
+NetworkInterface::deallocate_PSHHR(uint64_t MsgID, int src_ni)
 {
     
 }
@@ -756,14 +752,7 @@ NetworkInterface::deallocate_CMHR(uint64_t MsgID, int src_ni)
 //allocate message sequence number for processor messages
 unsigned long NetworkInterface::allocateMSN()
 {
-    unsigned long KEY;
-    unsigned long MsgID;
-
-    // Static state: PRNG seed and sequence counter
-    static unsigned long Seed = 123456789;
-    static unsigned long Seq_ID = 0;
-
-    // Static buffer to track recent keys to avoid immediate reuse
+     // Static buffer to track recent keys to avoid immediate reuse
     static std::deque<uint8_t> recent_keys;
     static const size_t MAX_BUFFER_SIZE = 16;  // Track last 16 keys
 
