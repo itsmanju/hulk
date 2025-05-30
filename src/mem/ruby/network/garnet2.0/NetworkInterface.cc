@@ -760,28 +760,41 @@ NetworkInterface::deallocate_CMHR(uint64_t MsgID, int src_ni)
 
 //allocate message sequence number for processor messages
 
-unsigned long
-NetworkInterface::allocateMSN()
+//allocate message sequence number for processor messages
+unsigned long NetworkInterface::allocateMSN()
 {
-    //Unique Message ID Generation
+    unsigned long KEY;
+    unsigned long MsgID;
 
-        //KEY Generation
-        /* seed the PRNG (MT19937) using a fixed value (in our case, 0) */
-        unsigned long  KEY;
-        unsigned long MsgID;
-        std::random_device device;
-         /* seed the PRNG (MT19937) using a fixed value (in our case, 0) */
-        std::mt19937 generator(device ());
-        std::uniform_int_distribution<int> distribution(1,2048);
- 
-        /* generate ten numbers in [1,6] (always the same sequence!) */
-        KEY = distribution(generator);
-        
-        //MsgID = SRC ⊕ DEST ⊕ N I ID ⊕ KEY
-        MsgID = m_router_id ^ route.dest_router ^ m_id ^ KEY; 
- 
+    // Static state: PRNG seed and sequence counter
+    static unsigned long Seed = 123456789;
+    static unsigned long Seq_ID = 0;
+
+    // Static buffer to track recent keys to avoid immediate reuse
+    static std::deque<uint8_t> recent_keys;
+    static const size_t MAX_BUFFER_SIZE = 16;  // Track last 16 keys
+
+    // Create a unique seed using fixed seed and sequence ID
+    std::seed_seq seed_seq{Seed, Seq_ID++};
+    std::mt19937 generator(seed_seq);
+
+    // Try generating a non-repeating KEY
+    do {
+        uint32_t rand_val = generator();     // Generate a 32-bit random number
+        KEY = rand_val & 0xFF;               // Extract 8-bit KEY
+    } while (std::find(recent_keys.begin(), recent_keys.end(), KEY) != recent_keys.end());
+
+    // Update recent_keys buffer
+    recent_keys.push_back(KEY);
+    if (recent_keys.size() > MAX_BUFFER_SIZE)
+        recent_keys.pop_front();             // Maintain buffer size
+
+    // Compute unique MsgID using XOR of identifiers and the fresh KEY
+    MsgID = m_router_id ^ route.dest_router ^ m_id ^ KEY;
+
     return MsgID;
 }
+
 
 NetworkInterface *
 GarnetNetworkInterfaceParams::create()
