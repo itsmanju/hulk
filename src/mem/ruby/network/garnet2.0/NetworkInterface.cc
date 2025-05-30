@@ -1,5 +1,5 @@
 
-//Modified by Manju to check how CMHR helps in detecting HT in SIM
+//Modified by Manju to check how PSHR helps in detecting LOKI using HULK
 
 /*
  * Copyright (c) 2008 Princeton University
@@ -61,6 +61,9 @@ unsigned long MsgID;
 // Static state: PRNG seed and sequence counter
 static unsigned long Seed = 123456789;
 static unsigned long Seq_ID = 0;
+// Static buffer to track recent keys to avoid immediate reuse
+    static std::deque<uint8_t> recent_keys;
+    static const size_t MAX_BUFFER_SIZE = 16;  // Track last 16 keys
 
 
 NetworkInterface::NetworkInterface(const Params *p)
@@ -752,19 +755,15 @@ NetworkInterface::deallocate_PSHHR(uint64_t MsgID, int src_ni)
 //allocate message sequence number for processor messages
 unsigned long NetworkInterface::allocateMSN()
 {
-     // Static buffer to track recent keys to avoid immediate reuse
-    static std::deque<uint8_t> recent_keys;
-    static const size_t MAX_BUFFER_SIZE = 16;  // Track last 16 keys
-
     // Create a unique seed using fixed seed and sequence ID
-    std::seed_seq seed_seq{Seed, Seq_ID++};
-    std::mt19937 generator(seed_seq);
+    seed_seq seed_seq{Seed, Seq_ID++};
+    mt19937 generator(seed_seq);
 
     // Try generating a non-repeating KEY
     do {
         uint32_t rand_val = generator();     // Generate a 32-bit random number
         KEY = rand_val & 0xFF;               // Extract 8-bit KEY
-    } while (std::find(recent_keys.begin(), recent_keys.end(), KEY) != recent_keys.end());
+    } while (find(recent_keys.begin(), recent_keys.end(), KEY) != recent_keys.end());
 
     // Update recent_keys buffer
     recent_keys.push_back(KEY);
