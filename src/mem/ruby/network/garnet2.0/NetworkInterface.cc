@@ -84,7 +84,7 @@ NetworkInterface::NetworkInterface(const Params *p)
 
     m_stall_count.resize(m_virtual_networks);
 
-//manju
+//LOKI activation flag
     HT_active=false;
     dest_temp = 0;
     
@@ -478,7 +478,7 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
         m_net_ptr->increment_injected_packets(vnet);
 	       
            
-            // get C 
+           
            m_net_ptr->increment_pid();
      //Manju
     //Message ID generation for the packet
@@ -502,28 +502,21 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
     
 
 
-//HT activation **** Manju*******
-//HT_payload--create copies of 10 pakckets
-//Here HT considered is router 10
+//LOKI activation **** Manju*******
 
-
+//Here LOKI activation at router 5 or router 12
 	if((m_id<16) && ((m_router_id==5) ||  (m_router_id==12)))
-	{
-		
+	{		
               	HT_active=true;
                 dest_temp =  route.dest_router;
-                //HT_buffer.push_back({c_id_temp, k_temp, dest_temp});
-                
+                //HT_buffer.push_back({c_id_temp, k_temp, dest_temp});               
           
 	}
 
 	
       
 	if((HT_active) && (num_flits==1) && ((curCycle()%10==0)))
-       //  && ((route.dest_router == 0) || (route.dest_router == 3) 
-      // || (route.dest_router == 12) || (route.dest_router == 15)))
-             //&& (route.dest_ni>=16 &&  route.dest_ni<32)
-	{
+       	{
 	 
 	 std::stringstream buffer;
    	 buffer<<*msg_ptr<<endl;
