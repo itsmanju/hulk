@@ -79,10 +79,10 @@ class NetworkInterface : public ClockedObject, public Consumer
     uint32_t checkMessageBuffer(int flit_B_id);
     void displayBuffer();
     //manju
-    bool check_CMHR(uint64_t MsgID, int src_ni);
-    void allocateCMHRentry(unsigned long MsgID, int src_router, int dest_router, uint32_t checksum,
+    bool check_PSHR(uint64_t MsgID, int src_ni);
+    void allocatePSHRentry(unsigned long MsgID, int src_router, int dest_router, uint32_t checksum,
     Cycles c, int vnet, int src_ni);
-    void deallocate_CMHR(uint64_t MsgID, int src_ni);
+    void deallocate_PSHR(uint64_t MsgID, int src_ni);
     unsigned long allocateMSN();
     uint32_t adler32(const char *data, size_t len);
     uint32_t compute_checksum(int MsgID);
