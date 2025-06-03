@@ -493,7 +493,7 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
     checksum = compute_checksum(MsgID);
     //MsgID =  net_msg_ptr->getaddr();
     //add the details to Core Message Handler Register
-    allocateCMHRentry (MsgID, m_router_id, route.dest_router, checksum, curCycle(), vnet, route.src_ni);
+    allocatePSHRentry (MsgID, m_router_id, route.dest_router, checksum, curCycle(), vnet, route.src_ni);
 
 
            for (int i = 0; i < num_flits; i++) {
@@ -745,7 +745,7 @@ NetworkInterface::check_PSHR(unsigned long MsgID, int src_ni)
 }
 
 void
-NetworkInterface::deallocate_PSHHR(uint64_t MsgID, int src_ni)
+NetworkInterface::deallocate_PSHR(uint64_t MsgID, int src_ni)
 {
     
 }
@@ -756,14 +756,14 @@ NetworkInterface::deallocate_PSHHR(uint64_t MsgID, int src_ni)
 unsigned long NetworkInterface::allocateMSN()
 {
     // Create a unique seed using fixed seed and sequence ID
-    seed_seq seed_seq{Seed, Seq_ID++};
-    mt19937 generator(seed_seq);
+    std::seed_seq seed_seq{Seed, Seq_ID++};
+    std::mt19937 generator(seed_seq);
 
     // Try generating a non-repeating KEY
     do {
         uint32_t rand_val = generator();     // Generate a 32-bit random number
         KEY = rand_val & 0xFF;               // Extract 8-bit KEY
-    } while (find(recent_keys.begin(), recent_keys.end(), KEY) != recent_keys.end());
+    } while (std::find(recent_keys.begin(), recent_keys.end(), KEY) != recent_keys.end());
 
     // Update recent_keys buffer
     recent_keys.push_back(KEY);
