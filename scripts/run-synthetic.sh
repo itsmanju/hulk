@@ -11,16 +11,12 @@ cd /home/manju/work/hulk
 scons build/Garnet_standalone/gem5.fast -j33
 
 # Run simulation
-./build/Garnet_standalone/gem5.fast \
-configs/example/betar_synth_traffic.py \
---num-cpus=16 \
---num-dirs=16 \
---topology=Mesh_XY \
---mesh-rows=4 \
---network=garnet2.0 \
---sim-cycles=50000000 \
---routing-algorithm=1 \
---inj-vnet=0 \
---synthetic=uniform_random \
---injectionrate=0.1 \
---outdir=m5out/16c/synthetic/random/0_1
+./build/X86_MESI_Two_Level/gem5.fast 
+ configs/example/garnet_synth_traffic.py 
+ --network=garnet2.0 
+ --inj-vnet=2 
+ --num-cpus=64 --num-dirs=64 
+ --topology=Mesh_XY --mesh-rows=8 
+ --synthetic=uniform_random 
+ --injectionrate=0.01
+ --sim-cycles=50000000
